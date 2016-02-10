@@ -18,7 +18,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="dash-board.html">
-
+  <link rel="import" href="dash-header.html">
   <style>
     body {
       margin: 0;
@@ -28,12 +28,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </head>
 <body>
 
-  <dash-board
-      header="Triage this!"
-      full-repo-names
-      repos='["polymerelements/paper-input", "polymerelements/paper-button", "notwaldorf/caturday-post", "polymer/polymer"]'
-      labels='["bug", "enhancement"]'>
-  </dash-board>
+  <template is="dom-bind">
+    <dash-header header="Triage this!" github-user="{{user}}"></dash-header>
+    <dash-board
+        github-user="[[user]]"
+        full-repo-names
+        repos='["polymerelements/paper-input", "polymerelements/paper-button", "notwaldorf/caturday-post", "polymer/polymer"]'
+        labels='["bug", "enhancement"]'>
+    </dash-board>
+
+    <!-- <dash-board
+        github-user="[[user]]"
+        repos='["emoji-rain", "emoji-selector"]'
+        labels='["bug", "enhancement"]'>
+    </dash-board> -->
+  </template>
 
   <!-- <dash-board
       header="Triage this!"
