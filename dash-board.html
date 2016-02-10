@@ -224,6 +224,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         travisBadge: {
           type: Boolean,
           value: false
+        },
+
+        fullRepoNames: {
+          type: Boolean
         }
       },
 
@@ -276,7 +280,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // We may have made a paginated request, in which case we added the
         // page as the 'next' property.
-        var name = this.organization + '/'+ repo;
+        var name = this.fullRepoNames ? repo : this.organization + '/'+ repo;
         var base = repo.next || 'https://api.github.com/repos/' + name + '/issues?state=open';
         var url = base + '&access_token=' + this.githubUser.github.accessToken;
 
