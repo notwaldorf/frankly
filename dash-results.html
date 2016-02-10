@@ -257,6 +257,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _refresh: function(user) {
+        if (!user)
+          return;
+          
         if (!this.organization)
           this.organization = user.github.username;
 
