@@ -226,10 +226,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
       <template is="dom-repeat" items="{{byRepo}}">
         <div class="row repo">
-          <div class="name"><a target="_blank" href="https://github.com/{{organization}}/{{item.name}}">{{item.name}}</a></div>
-          <div class="count"><a class="pr" target="_blank" href="https://github.com/{{organization}}/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen">{{item.issues}}</a></div>
-          <div class="count"><a class="pr" target="_blank" href="https://github.com/{{organization}}/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+no%3Alabel+">{{item.untriaged}}</a></div>
-          <div class="count"><a class="pr" target="_blank" href="https://github.com/{{organization}}/{{item.name}}/pulls?utf8=%E2%9C%93&q=is%3Apr+is%3Aopen">{{item.prs}}</a></div>
+          <div class="name"><a target="_blank" href="https://github.com/{{item.name}}">{{item.name}}</a></div>
+          <div class="count"><a class="pr" target="_blank" href="https://github.com/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen">{{item.issues}}</a></div>
+          <div class="count"><a class="pr" target="_blank" href="https://github.com/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+no%3Alabel+">{{item.untriaged}}</a></div>
+          <div class="count"><a class="pr" target="_blank" href="https://github.com/{{item.name}}/pulls?utf8=%E2%9C%93&q=is%3Apr+is%3Aopen">{{item.prs}}</a></div>
 
           <template is="dom-repeat" items="{{byRepo.labels}}" as="labelItem">
             <div class="count"><a class="pr" target="_blank" href="https://github.com/{{organization}}/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3A{{labelItem.name}}+">{{labelItem.count}}</a></div>
@@ -391,7 +391,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var repoIssues = this._getAllIssues(response);
           var repoUntriaged = this._filterIssuesByLabel(response, /^.+/i, true);
           var repoPRs = this._getAllPRs(response);
-          var repoSummary = {'name': repo,
+          var repoSummary = {'name': this.fullRepoNames ? repo : this.organization + '/'+ repo,
                              'issues': repoIssues.length,
                              'untriaged': repoUntriaged.length,
                              'prs': repoPRs.length,
