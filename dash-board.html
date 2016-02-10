@@ -141,15 +141,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         @apply(--layout-horizontal);
         font-size: 16px;
         padding: 10px 0;
-        border-bottom: 1px solid #EFF0EC;
+        border-bottom: 1px solid var(--paper-blue-grey-50);
       }
 
+      .row > * {
+        padding: 5px;
+        box-sizing: border-box;
+      }
       .count {
         min-width: 30px;
         width: 100px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        text-align: center;
       }
       .name {
         min-width: 170px;
@@ -158,6 +163,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         word-wrap: break-word;
       }
 
+      .header {
+        background-color: var(--paper-blue-grey-50);
+      }
       @media (max-width:500px) {
         .header, .status {
           font-size: 3vw;
