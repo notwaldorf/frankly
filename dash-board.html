@@ -47,6 +47,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin: 0;
       }
 
+      a:link, a:visited {
+        text-decoration: none;
+        color: var(--google-blue-700);
+      }
+
       .avatar {
         border-radius: 50%;
         width: 36px;
@@ -93,13 +98,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         max-width: 600px;
         margin: 40px auto;
       }
+
       .summary {
         @apply(--layout-wrap);
+      }
+
+      .row {
+        @apply(--layout-horizontal);
+        font-size: 16px;
+        padding: 10px 0;
+        border-bottom: 1px solid #EFF0EC;
+      }
+
+      .count {
+        width: 100px;
+      }
+      .name {
+        width: 300px;
       }
     </style>
 
     <paper-toolbar>
-      <span class="title">[[title]]</span>
+      <span class="title">[[header]]</span>
 
       <div hidden$="[[!githubUser]]">
         <span>{{githubUser.github.displayName}}</span>
@@ -142,7 +162,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </div>
         </template>
       </div>
+
       <div class="status">Status: {{status}}</div>
+
+      <div class="row header">
+        <div class="name">Repository</div>
+        <div class="count">Issues</div>
+        <div class="count">Untriaged</div>
+        <div class="count">PR's</div>
+        <template is="dom-repeat" items="{{labels}}">
+          <div class="count">{{item}}</div>
+        </template>
+      </div>
+      <template is="dom-repeat" items="{{byRepo}}">
+        <div class="row repo">
+          <div class="name"><a target="_blank" href="https://github.com/{{organization}}/{{item.name}}">{{item.name}}</a></div>
+          <div class="count"><a class="pr" target="_blank" href="https://github.com/{{organization}}/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen">{{item.issues}}</a></div>
+          <div class="count"><a class="pr" target="_blank" href="https://github.com/{{organization}}/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+no%3Alabel+">{{item.untriaged}}</a></div>
+          <div class="count"><a class="pr" target="_blank" href="https://github.com/{{organization}}/{{item.name}}/pulls?utf8=%E2%9C%93&q=is%3Apr+is%3Aopen">{{item.prs}}</a></div>
+
+          <template is="dom-repeat" items="{{byRepo.labels}}" as="labelItem">
+            <div class="count"><a class="pr" target="_blank" href="https://github.com/{{organization}}/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3A{{labelItem.name}}+">{{labelItem.count}}</a></div>
+          </template>
+          <div class="count" hidden$="[[!travisBadge]]"><a target="_blank" href="https://travis-ci.org/{{organization}}/{{item.name}}"><img src="https://travis-ci.org/{{organization}}/{{item.name}}.svg?branch=master"></a></div>
+        </div>
+      </template>
+
     </div>
 
     <firebase-auth provider="github" id="githubAuth"
@@ -156,7 +201,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'dash-board',
 
       properties: {
-        title: {
+        header: {
           type: String
         },
 
@@ -174,6 +219,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         labels: {
           type: Array
+        },
+
+        travisBadge: {
+          type: Boolean,
+          value: false
         }
       },
 
@@ -198,6 +248,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _refresh: function(user) {
+        if (!this.organization)
+          this.organization = user.github.username;
+
         // We want to incrementally fetch each repo, rather than block while
         // waiting on all of them, so create a queue of repos we care about.
         var requestQueue = [];
@@ -207,6 +260,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         this.all = {};
+        this.set(['byRepo'], []);
         this.set(['all', 'labels'], []);
         this._requestQueue = requestQueue;
         this._makeNextRequest();
@@ -222,8 +276,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // We may have made a paginated request, in which case we added the
         // page as the 'next' property.
-        var org = this.organization || this.githubUser.github.username;
-        var name = org + '/'+ repo;
+        var name = this.organization + '/'+ repo;
         var base = repo.next || 'https://api.github.com/repos/' + name + '/issues?state=open';
         var url = base + '&access_token=' + this.githubUser.github.accessToken;
 
@@ -252,23 +305,44 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         } else {
           var response = JSON.parse(xhr.responseText);
 
-          this._updateModelPath(['all', 'issues'], this._getAllIssues(response));
-          this._updateModelPath(['all', 'untriaged'], this._filterIssuesByLabel(response, /^.+/i, true));
-          this._updateModelPath(['all', 'prs'], this._getAllPRs(response));
+          var repoIssues = this._getAllIssues(response);
+          var repoUntriaged = this._filterIssuesByLabel(response, /^.+/i, true);
+          var repoPRs = this._getAllPRs(response);
+          var repoSummary = {'name': repo,
+                             'issues': repoIssues.length,
+                             'untriaged': repoUntriaged.length,
+                             'prs': repoPRs.length,
+                             'labels': []
+                            };
+          var repoLabelSummary = [];
 
+          // Add to the total summary.
+          this._updateModelPath(['all', 'issues'], repoIssues);
+          this._updateModelPath(['all', 'untriaged'], repoUntriaged);
+          this._updateModelPath(['all', 'prs'], repoPRs);
+
+          // Add to the total summary by label.
           for (var i = 0; i < this.labels.length; i++) {
             var regex = new RegExp('^' + this.labels[i], 'i');
             var items = this._filterIssuesByLabel(response, regex, false);
+            repoLabelSummary.push({'name': this.labels[i], 'count': items.length});
 
             // Ugh I think this can be maybe done with paths, but I suck at paths.
             // Does this label already exist?
             if (this.all.labels[i]) {
-              // Merge the numbers!
-              // ???
+              // Merge the numbers! ???
+              this._updateModelPath(['this.all.labels[i].items'], items);
             } else {
               this.push('all.labels', {'name': this.labels[i], 'items': items});
             }
           }
+
+          // Assemble the row view.
+          var index = this.byRepo.length;
+          this.push('byRepo', repoSummary);
+          // ???
+          this.set(['byRepo', 'labels'], repoLabelSummary);
+          this.set('byRepo.0.labels', repoLabelSummary);
 
           // Yay for pagination!
           var link = xhr.getResponseHeader('Link');
