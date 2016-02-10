@@ -9913,6 +9913,8 @@ refresh: function () {
 this._refresh(this.githubUser);
 },
 _refresh: function (user) {
+if (!user)
+return;
 if (!this.organization)
 this.organization = user.github.username;
 var requestQueue = [];
