@@ -124,16 +124,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div class="container">
       <div class="horizontal justified summary" style="vertical-align:bottom">
         <div class="tldr">
+          <div class="value">{{all.prs.length}}</div>
+          <div class="title">PRs</div>
+        </div>
+        <div class="tldr">
           <div class="value">{{all.issues.length}}</div>
           <div class="title">Issues</div>
         </div>
-        <!-- <div class="tldr">
-          <div class="value">{{all.untriaged.length}}</div>
-          <div class="title">Untriaged Issues</div>
-        </div> -->
         <div class="tldr">
-          <div class="value">{{all.prs.length}}</div>
-          <div class="title">Open PRs</div>
+          <div class="value">{{all.untriaged.length}}</div>
+          <div class="title">Untriaged</div>
         </div>
         <template is="dom-repeat" items="{{all.labels}}">
           <div class="tldr">
@@ -253,7 +253,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var response = JSON.parse(xhr.responseText);
 
           this._updateModelPath(['all', 'issues'], this._getAllIssues(response));
-          // this._updateModelPath(['all', 'untriaged'], this._getAllIssues(response));
+          this._updateModelPath(['all', 'untriaged'], this._filterIssuesByLabel(response, /^.+/i, true));
           this._updateModelPath(['all', 'prs'], this._getAllPRs(response));
 
           for (var i = 0; i < this.labels.length; i++) {
