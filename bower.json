@@ -1,0 +1,15 @@
+{
+  "name": "github-triage-dashboard",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "private": true,
+  "dependencies": {
+    "polymer": "polymer/polymer#^1.2.0",
+    "font-roboto": "polymerelements/font-roboto#^1.0.0",
+    "firebase-element": "googlewebcomponents/firebase-element#^1.0.0",
+    "paper-button": "polymerelements/paper-button#^1.0.0",
+    "paper-toolbar": "polymerelements/paper-toolbar#^1.0.0",
+    "paper-styles": "polymerelements/paper-styles#^1.0.0"
+  }
+}
