@@ -125,8 +125,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div class="horizontal justified summary" style="vertical-align:bottom">
         <div class="tldr">
           <div class="value">{{all.issues.length}}</div>
-          <div class="title">Open Issues</div>
+          <div class="title">Issues</div>
         </div>
+        <!-- <div class="tldr">
+          <div class="value">{{all.untriaged.length}}</div>
+          <div class="title">Untriaged Issues</div>
+        </div> -->
         <div class="tldr">
           <div class="value">{{all.prs.length}}</div>
           <div class="title">Open PRs</div>
@@ -218,7 +222,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // We may have made a paginated request, in which case we added the
         // page as the 'next' property.
-        var org = this.org || this.githubUser.github.username;
+        var org = this.organization || this.githubUser.github.username;
         var name = org + '/'+ repo;
         var base = repo.next || 'https://api.github.com/repos/' + name + '/issues?state=open';
         var url = base + '&access_token=' + this.githubUser.github.accessToken;
@@ -249,6 +253,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var response = JSON.parse(xhr.responseText);
 
           this._updateModelPath(['all', 'issues'], this._getAllIssues(response));
+          // this._updateModelPath(['all', 'untriaged'], this._getAllIssues(response));
           this._updateModelPath(['all', 'prs'], this._getAllPRs(response));
 
           for (var i = 0; i < this.labels.length; i++) {
