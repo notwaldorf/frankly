@@ -231,7 +231,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <div class="count"><a class="pr" target="_blank" href="https://github.com/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+no%3Alabel+">{{item.untriaged}}</a></div>
           <div class="count"><a class="pr" target="_blank" href="https://github.com/{{item.name}}/pulls?utf8=%E2%9C%93&q=is%3Apr+is%3Aopen">{{item.prs}}</a></div>
 
-          <template is="dom-repeat" items="{{byRepo.labels}}" as="labelItem">
+          <template is="dom-repeat" items="{{item.labels}}" as="labelItem">
             <div class="count"><a class="pr" target="_blank" href="https://github.com/{{organization}}/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3A{{labelItem.name}}+">{{labelItem.count}}</a></div>
           </template>
           <div class="count" hidden$="[[!travisBadge]]"><a target="_blank" href="https://travis-ci.org/{{organization}}/{{item.name}}"><img src="https://travis-ci.org/{{organization}}/{{item.name}}.svg?branch=master"></a></div>
@@ -390,12 +390,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var repoIssues = this._getAllIssues(response);
           var repoUntriaged = this._filterIssuesByLabel(response, /^.+/i, true);
           var repoPRs = this._getAllPRs(response);
-          var repoSummary = {'name': this._getFullRepoName(repo.name),
-                             'issues': repoIssues.length,
-                             'untriaged': repoUntriaged.length,
-                             'prs': repoPRs.length,
-                             'labels': []
-                            };
           var repoLabelSummary = [];
 
           // Add to the total summary.
@@ -409,22 +403,43 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             var items = this._filterIssuesByLabel(response, regex, false);
             repoLabelSummary.push({'name': this.labels[i], 'count': items.length});
 
-            // Ugh I think this can be maybe done with paths, but I suck at paths.
-            // Does this label already exist?
+            // If this label exists, add to it, otherwise create a new entry for it.
             if (this.all.labels[i]) {
-              // Merge the numbers! ???
-              this._updateModelPath(['this.all.labels[i].items'], items);
+              this._updateModelPath(['all.labels', i, 'items'], items);
             } else {
               this.push('all.labels', {'name': this.labels[i], 'items': items});
             }
           }
 
-          // Assemble the row view.
-          var index = this.byRepo.length;
-          this.push('byRepo', repoSummary);
-          // ???
-          this.set(['byRepo', 'labels'], repoLabelSummary);
-          this.set('byRepo.0.labels', repoLabelSummary);
+          // Assemble the row view. If this row already exists, add to it,
+          // otherwise create a new entry.
+          var found = false;
+          for (var i = 0; i < this.byRepo.length; i++) {
+            // We're adding to an existing repo!
+            if (this.byRepo[i].name === this._getFullRepoName(repo.name)) {
+              this.set(['byRepo', i, 'issues'], this.get(['byRepo', i, 'issues']) + repoIssues.length);
+              this.set(['byRepo', i, 'untriaged'], this.get(['byRepo', i, 'untriaged']) + repoUntriaged.length);
+              this.set(['byRepo', i, 'prs'], this.get(['byRepo', i, 'prs']) + repoPRs.length);
+              // For each of the labels, add the new numbers.
+              for (var j = 0; j < this.labels.length; j++) {
+                this.set(['byRepo', i, 'labels', j, 'count'],
+                        this.get(['byRepo', i, 'labels', j, 'count']) + repoLabelSummary[j].count);
+              }
+              //this._updateModelPath(['byRepo', i, 'labels'], repoLabelSummary);
+              found = true;
+              break;
+            }
+          }
+
+          if (!found) {
+            this.push('byRepo', {
+              'name': this._getFullRepoName(repo.name),
+              'issues': repoIssues.length,
+              'untriaged': repoUntriaged.length,
+              'prs': repoPRs.length
+            });
+            this.set(['byRepo', this.byRepo.length - 1, 'labels'], repoLabelSummary);
+          }
 
           // Yay for pagination!
           var link = xhr.getResponseHeader('Link');
