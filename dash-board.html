@@ -82,11 +82,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin: 100px auto;
       }
 
-      /*.p0 { color: var(--paper-pink-500) !important; }
-      .p1 { color: var(--paper-orange-500) !important; }
-      .p2 { color: var(--paper-indigo-500) !important; }
-      .pr { color: var(--paper-green-500) !important; }*/
-
       .tldr {
         text-align: center;
         margin: 0 2vw;
@@ -176,27 +171,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <paper-toolbar>
       <span class="title">[[header]]</span>
 
-      <div hidden$="[[!_isLoggedIn(githubUser)]]">
-        <span class="avatar-name">{{githubUser.github.displayName}}</span>
-        <img class="avatar" alt="github avatar" src="[[githubUser.github.profileImageURL]]">
+      <div hidden$="[[!_isLoggedIn(_githubUser)]]">
+        <span class="avatar-name">{{_githubUser.github.displayName}}</span>
+        <img class="avatar" alt="github avatar" src="[[_githubUser.github.profileImageURL]]">
         <span class="divider">|</span>
       </div>
 
       <paper-button on-tap="_onLoginTap">
-        {{_buttonText(githubUser)}}
-        <svg class="octocat-icon" hidden$="[[_isLoggedIn(githubUser)]]" height="16" width="16" xmlns="http://www.w3.org/2000/svg">
+        {{_buttonText(_githubUser)}}
+        <svg class="octocat-icon" hidden$="[[_isLoggedIn(_githubUser)]]" height="16" width="16" xmlns="http://www.w3.org/2000/svg">
           <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59 0.4 0.07 0.55-0.17 0.55-0.38 0-0.19-0.01-0.82-0.01-1.49-2.01 0.37-2.53-0.49-2.69-0.94-0.09-0.23-0.48-0.94-0.82-1.13-0.28-0.15-0.68-0.52-0.01-0.53 0.63-0.01 1.08 0.58 1.23 0.82 0.72 1.21 1.87 0.87 2.33 0.66 0.07-0.52 0.28-0.87 0.51-1.07-1.78-0.2-3.64-0.89-3.64-3.95 0-0.87 0.31-1.59 0.82-2.15-0.08-0.2-0.36-1.02 0.08-2.12 0 0 0.67-0.21 2.2 0.82 0.64-0.18 1.32-0.27 2-0.27 0.68 0 1.36 0.09 2 0.27 1.53-1.04 2.2-0.82 2.2-0.82 0.44 1.1 0.16 1.92 0.08 2.12 0.51 0.56 0.82 1.27 0.82 2.15 0 3.07-1.87 3.75-3.65 3.95 0.29 0.25 0.54 0.73 0.54 1.48 0 1.07-0.01 1.93-0.01 2.2 0 0.21 0.15 0.46 0.55 0.38C13.71 14.53 16 11.53 16 8 16 3.58 12.42 0 8 0z" />
         </svg>
       </paper-button>
     </paper-toolbar>
 
-    <div class="login-placeholder" hidden$="[[_isLoggedIn(githubUser)]]">
+    <div class="login-placeholder" hidden$="[[_isLoggedIn(_githubUser)]]">
       <h1><span style="font-weight:normal; font-size: 70px;">🙀</span></h1>
       <h1>You're not signed in!</h1>
       <p>You need to sign it with GitHub for this to work.</p>
     </div>
 
-    <div class="container" hidden$="[[!_isLoggedIn(githubUser)]]">
+    <div class="container" hidden$="[[!_isLoggedIn(_githubUser)]]">
       <div class="horizontal justified summary" style="vertical-align:bottom">
         <div class="tldr">
           <div class="value">{{all.prs.length}}</div>
@@ -247,7 +242,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <firebase-auth provider="github" id="githubAuth"
       location="https://grilled-cheese.firebaseio.com"
-      user="{{githubUser}}">
+      user="{{_githubUser}}">
     </firebase-auth>
   </template>
 
@@ -256,50 +251,79 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'dash-board',
 
       properties: {
+        /**
+         * The name of your application, displayed in the toolbar.
+         */
         header: {
           type: String
         },
 
-        githubUser: {
-          type: Object
-        },
-
+        /**
+         * The organization to which the repos listed in the `repos` property
+         * belong to. If left blank, it will default to the authenticated in
+         * GitHub user.
+         */
         organization: {
           type: String
         },
 
+        /**
+         * The list of repositories to display stats about.
+         * Sample use: '["emoji-rain", "emoji-translate"]'. These are repos
+         * the authenticated GitHub user should have access to, and are relative
+         * to the organization provided (i.e. github.com/{{organization}}/repo).
+         * If the organization was left blank, then the repos are relative to
+         * the authenticated username (i.e. github.com/{{username}}/repo).
+         */
         repos: {
           type: Array
         },
 
+        /**
+         * Set to true if you want to provide fully qualified repo names. This
+         * is useful if you want to mix repositories from different users
+         * and organization. Sample use: '["notwaldorf/emoji-rain", "polymer/polymer"]'
+         */
+        fullRepoNames: {
+          type: Boolean
+        },
+
+        /**
+         * An optional set of labels for which to display issue stats;
+         * Sample use '["p0-critical", "p1-backlog", "p2-icebox"]'
+         */
         labels: {
           type: Array
         },
 
+        /**
+         * Set to true if you want to display build status badges from Travis.
+         */
         travisBadge: {
           type: Boolean,
           value: false
-        },
-
-        fullRepoNames: {
-          type: Boolean
         }
       },
 
       observers: [
-        '_refresh(githubUser)'
+        '_refresh(_githubUser)'
       ],
 
-      refresh: function() {
-        this._refresh(this.githubUser);
+      ready: function() {
+        // Object shaping.
+        //this._githubUser = null;
+        this._requestQueue = null;
       },
 
-      _buttonText: function(user) {
-        return user ? 'Sign out' : 'Sign in with GitHub';
+      /**
+       * Refresh the list of issues/PRs.
+       */
+      refresh: function() {
+        this._refresh(this._githubUser);
       },
 
       _onLoginTap: function() {
-        if (this.githubUser) {
+        if (this._githubUser) {
           this.$.githubAuth.logout();
         } else {
           this.$.githubAuth.login();
@@ -337,7 +361,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // page as the 'next' property.
         var name = this.fullRepoNames ? repo : this.organization + '/'+ repo;
         var base = repo.next || 'https://api.github.com/repos/' + name + '/issues?state=open';
-        var url = base + '&access_token=' + this.githubUser.github.accessToken;
+        var url = base + '&access_token=' + this._githubUser.github.accessToken;
 
         // Make request!
         var xhr = new XMLHttpRequest();
@@ -446,6 +470,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _updateModelPath(path, newItems) {
         var currentItems = this.get(path) || [];
         this.set(path, currentItems.concat(newItems));
+      },
+
+      _buttonText: function(user) {
+        return user ? 'Sign out' : 'Sign in with GitHub';
       },
 
       _getStatusClass: function(status) {
