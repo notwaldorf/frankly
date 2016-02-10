@@ -108,6 +108,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .summary {
         @apply(--layout-wrap);
+        height: 78px;
       }
 
       .row {
@@ -281,7 +282,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var repo = this._requestQueue[0];
 
         if (!repo) {
-          this.status = '';
+          this.status = 'Done!';
           return;
         }
 
@@ -401,7 +402,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _getStatusClass: function(status) {
-        return status === '' ? 'hidden' : '';
+        return status === 'Done!' ? 'hidden' : '';
       },
 
       _isLoggedIn: function(user) {
