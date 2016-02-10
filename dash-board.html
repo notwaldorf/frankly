@@ -60,11 +60,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin-left: 16px;
       }
 
+      @media (max-width:500px) {
+        .avatar-name {
+          display: none;
+        }
+        .avatar {
+          width: 26px;
+          height: 26px;
+        }
+        paper-toolbar, paper-toolbar .title {
+          font-size: 3.5vw !important;
+        }
+      }
+
       .octocat-icon { fill: var(--paper-blue-grey-700); }
       .divider { padding: 0 0 0 16px; }
 
       .login-placeholder {
-        max-width: 500px;
+        max-width: 600px;
         text-align: center;
         margin: 100px auto;
       }
@@ -76,23 +89,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .tldr {
         text-align: center;
-        margin: 0 20px;
+        margin: 0 2vw;
       }
+
       .tldr .value {
-        font-size: 60px;
+        font-size: 70px;
         line-height: 1;
         font-weight: 700;
       }
+
+      @media (max-width:500px) {
+        .tldr .value {
+          font-size: 10vw;
+        }
+        .tldr {
+          margin: 0 3vw;
+        }
+      }
+
       .tldr .title {
-        font-size: 15px;
+        font-size: calc(50% + 0.7vw);
         font-weight: 300;
         text-transform: uppercase;
       }
 
       .status {
-        display: inline-block;
         text-align: center;
-        margin: 20px 0;
+        margin: 2vw 0;
         width: 100%;
       }
       .status.hidden {
@@ -102,12 +125,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .container {
-        max-width: 600px;
-        margin: 40px auto;
+        max-width: 800px;
+        margin: 2vw auto;
+        padding: 20px;
       }
 
       .summary {
+        box-sizing: border-box;
         @apply(--layout-wrap);
+        @apply(--layout-center-center);
         height: 78px;
       }
 
@@ -119,10 +145,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .count {
+        min-width: 30px;
         width: 100px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .name {
+        min-width: 170px;
         width: 300px;
+        margin-right: 10px;
+        word-wrap: break-word;
+      }
+
+      @media (max-width:500px) {
+        .header, .status {
+          font-size: 3vw;
+        }
       }
     </style>
 
@@ -130,7 +169,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <span class="title">[[header]]</span>
 
       <div hidden$="[[!_isLoggedIn(githubUser)]]">
-        <span>{{githubUser.github.displayName}}</span>
+        <span class="avatar-name">{{githubUser.github.displayName}}</span>
         <img class="avatar" alt="github avatar" src="[[githubUser.github.profileImageURL]]">
         <span class="divider">|</span>
       </div>
@@ -153,20 +192,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div class="horizontal justified summary" style="vertical-align:bottom">
         <div class="tldr">
           <div class="value">{{all.prs.length}}</div>
-          <div class="title">PRs</div>
+          <div class="title" title="PRs">PRs</div>
         </div>
         <div class="tldr">
           <div class="value">{{all.issues.length}}</div>
-          <div class="title">Issues</div>
+          <div class="title" title="Issues">Issues</div>
         </div>
         <div class="tldr">
           <div class="value">{{all.untriaged.length}}</div>
-          <div class="title">Untriaged</div>
+          <div class="title" title="Untriaged Issues">Untriaged</div>
         </div>
         <template is="dom-repeat" items="{{all.labels}}">
           <div class="tldr">
             <div class="value">{{item.items.length}}</div>
-            <div class="title">{{item.name}}</div>
+            <div class="title" title="Label: {{item.name}}">{{item.name}}</div>
           </div>
         </template>
       </div>
