@@ -18,14 +18,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 <dom-module id="dash-board">
-
   <template strip-whitespace>
-
     <style>
       :host {
         display: block;
         background: white;
         font-family: 'Roboto', 'Noto', sans-serif;
+      }
+
+      .horizontal {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+      }
+      .justified {
+        @apply(--layout-justified);
       }
 
       paper-toolbar {
@@ -57,6 +63,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         text-align: center;
         margin: 100px auto;
       }
+
+      /*.p0 { color: var(--paper-pink-500) !important; }
+      .p1 { color: var(--paper-orange-500) !important; }
+      .p2 { color: var(--paper-indigo-500) !important; }
+      .pr { color: var(--paper-green-500) !important; }*/
+
+      .tldr {
+        text-align: center;
+        margin: 0 20px;
+      }
+      .tldr .value {
+        font-size: 60px;
+        line-height: 1;
+        font-weight: 700;
+      }
+      .tldr .title {
+        font-size: 15px;
+        font-weight: 300;
+        text-transform: uppercase;
+      }
+
+      .status {
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+      }
+      .summary {
+        @apply(--layout-wrap);
+      }
     </style>
 
     <paper-toolbar>
@@ -82,6 +121,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <p>You need to sign it with GitHub for this to work.</p>
     </div>
 
+    <div class="container">
+      <div class="horizontal justified summary" style="vertical-align:bottom">
+        <div class="tldr">
+          <div class="value">{{all.issues.length}}</div>
+          <div class="title">Open Issues</div>
+        </div>
+        <div class="tldr">
+          <div class="value">{{all.prs.length}}</div>
+          <div class="title">Open PRs</div>
+        </div>
+        <template is="dom-repeat" items="{{all.labels}}">
+          <div class="tldr">
+            <div class="value">{{item.items.length}}</div>
+            <div class="title">{{item.name}}</div>
+          </div>
+        </template>
+      </div>
+      <div class="status">Status: {{status}}</div>
+    </div>
+
     <firebase-auth provider="github" id="githubAuth"
       location="https://grilled-cheese.firebaseio.com"
       user="{{githubUser}}">
@@ -99,13 +158,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         githubUser: {
           type: Object
+        },
+
+        organization: {
+          type: String
+        },
+
+        repos: {
+          type: Array
+        },
+
+        labels: {
+          type: Array
         }
       },
 
-      // listeners: {
-      //   'login': '_onLogin',
-      //   'logout': '_onLogout'
-      // },
+      observers: [
+        '_refresh(githubUser)'
+      ],
+
+      refresh: function() {
+        this._refresh(this.githubUser);
+      },
 
       _buttonText: function(user) {
         return user ? 'Sign out' : 'Sign in with GitHub';
@@ -118,6 +192,123 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.$.githubAuth.login();
         }
       },
+
+      _refresh: function(user) {
+        // We want to incrementally fetch each repo, rather than block while
+        // waiting on all of them, so create a queue of repos we care about.
+        var requestQueue = [];
+
+        for (var i = 0; i < this.repos.length; i++ ) {
+          requestQueue.push(this.repos[i]);
+        }
+
+        this.all = {};
+        this.set(['all', 'labels'], []);
+        this._requestQueue = requestQueue;
+        this._makeNextRequest();
+      },
+
+      _makeNextRequest: function() {
+        var repo = this._requestQueue[0];
+
+        if (!repo) {
+          this.status = 'Idle';
+          return;
+        }
+
+        // We may have made a paginated request, in which case we added the
+        // page as the 'next' property.
+        var org = this.org || this.githubUser.github.username;
+        var name = org + '/'+ repo;
+        var base = repo.next || 'https://api.github.com/repos/' + name + '/issues?state=open';
+        var url = base + '&access_token=' + this.githubUser.github.accessToken;
+
+        // Make request!
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.send();
+
+        this.status = 'Fetching issues for \'' + name + '\'';
+
+        xhr.addEventListener("load", function() {
+          this._handleResponse(xhr, repo);
+        }.bind(this));
+        xhr.addEventListener("error", function() {
+          this.status = 'Error: ' + xhr.status;
+          this.shift('_requestQueue');
+          this._makeNextRequest();
+        }.bind(this));
+      },
+
+      _handleResponse: function(xhr, repo) {
+        if (xhr.status/100 != 2) {
+          this.status = 'Error: ' + xhr.status;
+          this.shift('_requestQueue');
+          this._makeNextRequest();
+        } else {
+          var response = JSON.parse(xhr.responseText);
+
+          this._updateModelPath(['all', 'issues'], this._getAllIssues(response));
+          this._updateModelPath(['all', 'prs'], this._getAllPRs(response));
+
+          for (var i = 0; i < this.labels.length; i++) {
+            var regex = new RegExp('^' + this.labels[i], 'i');
+            var items = this._filterIssuesByLabel(response, regex, false);
+
+            // Ugh I think this can be maybe done with paths, but I suck at paths.
+            // Does this label already exist?
+            if (this.all.labels[i]) {
+              // Merge the numbers!
+              // ???
+            } else {
+              this.push('all.labels', {'name': this.labels[i], 'items': items});
+            }
+          }
+
+          // Yay for pagination!
+          var link = xhr.getResponseHeader('Link');
+          var matches = link && link.match(/<([^>]*)>; rel="next"/);
+          repo.next = matches && matches[1];
+          if (!repo.next) {
+            this.shift('_requestQueue');
+          }
+          this._makeNextRequest();
+        }
+      },
+
+      _getAllIssues: function(items) {
+        items = items.filter(function(item) {
+          return Boolean(item.pull_request) === false;
+        });
+        return items;
+      },
+
+      _getAllPRs: function(items) {
+        items = items.filter(function(item) {
+          return Boolean(item.pull_request) === true;
+        });
+        return items;
+      },
+
+      _filterIssuesByLabel: function(items, label, negate) {
+        items = this._getAllIssues(items);
+
+        items = items.filter(function(item) {
+          var matches = false;
+          for (var i = 0; i < item.labels.length; i++) {
+            if (item.labels[i].name.match(label)) {
+              matches = matches || true;
+            }
+          }
+          return negate ? !matches : matches;
+        });
+        return items;
+      },
+
+      _updateModelPath(path, newItems) {
+        var currentItems = this.get(path) || [];
+        this.set(path, currentItems.concat(newItems));
+      }
     });
   </script>
 </dom-module>
