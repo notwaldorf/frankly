@@ -339,7 +339,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var requestQueue = [];
 
         for (var i = 0; i < this.repos.length; i++ ) {
-          requestQueue.push(this.repos[i]);
+          requestQueue.push({'name': this.repos[i]});
         }
 
         this.all = {};
@@ -351,7 +351,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _makeNextRequest: function() {
         var repo = this._requestQueue[0];
-
         if (!repo) {
           this.status = 'Done!';
           return;
@@ -359,7 +358,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // We may have made a paginated request, in which case we added the
         // page as the 'next' property.
-        var name = this.fullRepoNames ? repo : this.organization + '/'+ repo;
+        var name = this._getFullRepoName(repo.name);
         var base = repo.next || 'https://api.github.com/repos/' + name + '/issues?state=open';
         var url = base + '&access_token=' + this._githubUser.github.accessToken;
 
@@ -391,7 +390,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var repoIssues = this._getAllIssues(response);
           var repoUntriaged = this._filterIssuesByLabel(response, /^.+/i, true);
           var repoPRs = this._getAllPRs(response);
-          var repoSummary = {'name': this.fullRepoNames ? repo : this.organization + '/'+ repo,
+          var repoSummary = {'name': this._getFullRepoName(repo.name),
                              'issues': repoIssues.length,
                              'untriaged': repoUntriaged.length,
                              'prs': repoPRs.length,
@@ -482,6 +481,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _isLoggedIn: function(user) {
         return !!user;
+      },
+
+      _getFullRepoName: function(name) {
+        return this.fullRepoNames ? name : this.organization + '/'+ name;
       }
     });
   </script>
