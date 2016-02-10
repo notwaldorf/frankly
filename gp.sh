@@ -10,7 +10,6 @@ git clone -b gh-pages --single-branch git@github.com:$org/$repo.git deploy
 
 mv index.build.html deploy/index.html
 mv index.build.js deploy
-cp sw.js deploy
 polybuild index-debug.html
 mv index-debug.build.html deploy/index-debug.html
 mv index-debug.build.js deploy
