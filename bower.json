@@ -10,6 +10,7 @@
     "firebase-element": "googlewebcomponents/firebase-element#^1.0.0",
     "paper-button": "polymerelements/paper-button#^1.0.0",
     "paper-toolbar": "polymerelements/paper-toolbar#^1.0.0",
-    "paper-styles": "polymerelements/paper-styles#^1.0.0"
+    "paper-styles": "polymerelements/paper-styles#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   }
 }
