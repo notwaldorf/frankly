@@ -55,15 +55,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         font-weight: 700;
       }
 
-      @media (max-width:500px) {
-        .tldr .value {
-          font-size: 10vw;
-        }
-        .tldr {
-          margin: 0 3vw;
-        }
-      }
-
       .tldr .title {
         font-size: calc(50% + 0.7vw);
         font-weight: 300;
@@ -125,6 +116,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       @media (max-width:500px) {
+        .tldr .value {
+          font-size: 10vw;
+        }
+        .tldr {
+          margin: 0 3vw;
+        }
         .header, .status {
           font-size: 3vw;
         }
@@ -164,7 +161,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <div class="count">{{item}}</div>
         </template>
       </div>
-      <template is="dom-repeat" items="{{byRepo}}">
+      <template is="dom-repeat" items="{{repos}}">
         <div class="row repo">
           <div class="name"><a target="_blank" href="https://github.com/{{item.name}}">{{item.name}}</a></div>
           <div class="count"><a class="pr" target="_blank" href="https://github.com/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen">{{item.issues}}</a></div>
@@ -246,7 +243,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ],
 
       ready: function() {
-        // Object shaping.
+        // Object shaping maybe.
         this._requestQueue = null;
       },
 
@@ -273,7 +270,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         this.all = {};
-        this.set(['byRepo'], []);
+        this.set(['repos'], []);
         this.set(['all', 'labels'], []);
         this._requestQueue = requestQueue;
         this._makeNextRequest();
@@ -318,63 +315,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var response = JSON.parse(xhr.responseText);
 
           var repoIssues = this._getAllIssues(response);
-          var repoUntriaged = this._filterIssuesByLabel(response, /^.+/i, true);
+          var repoUntriaged = this._filterIssuesByLabel(repoIssues, /^.+/i, true);
           var repoPRs = this._getAllPRs(response);
-          var repoLabelSummary = [];
+          var repoLabels = this._addLabelStatsToSummary(repoIssues);
 
-          // Add to the total summary.
+          // Assemble the TL DR summary.
           this._updateModelPath(['all', 'issues'], repoIssues);
           this._updateModelPath(['all', 'untriaged'], repoUntriaged);
           this._updateModelPath(['all', 'prs'], repoPRs);
 
-          // Add to the total summary by label.
-          for (var i = 0; i < this.labels.length; i++) {
-            var regex = new RegExp('^' + this.labels[i], 'i');
-            var items = this._filterIssuesByLabel(response, regex, false);
-            repoLabelSummary.push({'name': this.labels[i], 'count': items.length});
-
-            // If this label exists, add to it, otherwise create a new entry for it.
-            if (this.all.labels[i]) {
-              this._updateModelPath(['all.labels', i, 'items'], items);
-            } else {
-              this.push('all.labels', {'name': this.labels[i], 'items': items});
-            }
-          }
-
-          // Assemble the row view. If this row already exists, add to it,
-          // otherwise create a new entry.
-          var found = false;
-          for (var i = 0; i < this.byRepo.length; i++) {
-            // We're adding to an existing repo!
-            if (this.byRepo[i].name === this._getFullRepoName(repo.name)) {
-              this.set(['byRepo', i, 'issues'], this.get(['byRepo', i, 'issues']) + repoIssues.length);
-              this.set(['byRepo', i, 'untriaged'], this.get(['byRepo', i, 'untriaged']) + repoUntriaged.length);
-              this.set(['byRepo', i, 'prs'], this.get(['byRepo', i, 'prs']) + repoPRs.length);
-              // For each of the labels, add the new numbers.
-              for (var j = 0; j < this.labels.length; j++) {
-                this.set(['byRepo', i, 'labels', j, 'count'],
-                        this.get(['byRepo', i, 'labels', j, 'count']) + repoLabelSummary[j].count);
-              }
-              //this._updateModelPath(['byRepo', i, 'labels'], repoLabelSummary);
-              found = true;
-              break;
-            }
-          }
-
-          if (!found) {
-            this.push('byRepo', {
-              'name': this._getFullRepoName(repo.name),
-              'issues': repoIssues.length,
-              'untriaged': repoUntriaged.length,
-              'prs': repoPRs.length
-            });
-            this.set(['byRepo', this.byRepo.length - 1, 'labels'], repoLabelSummary);
-          }
+          this._updateRepoRow(this._getFullRepoName(repo.name),
+              repoLabels, repoIssues, repoUntriaged, repoPRs);
 
           // Yay for pagination!
           var link = xhr.getResponseHeader('Link');
           var matches = link && link.match(/<([^>]*)>; rel="next"/);
           repo.next = matches && matches[1];
+
           if (!repo.next) {
             this.shift('_requestQueue');
           }
@@ -409,6 +366,60 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return negate ? !matches : matches;
         });
         return items;
+      },
+
+      _addLabelStatsToSummary: function(issues) {
+        var stats = [];
+        // Add to the total summary by label.
+        for (var i = 0; i < this.labels.length; i++) {
+          var regex = new RegExp('^' + this.labels[i], 'i');
+          var items = this._filterIssuesByLabel(issues, regex, false);
+          stats.push({'name': this.labels[i], 'count': items.length});
+
+          // If this label exists, add to it, otherwise create a new entry for it.
+          if (this.all.labels[i]) {
+            this._updateModelPath(['all.labels', i, 'items'], items);
+          } else {
+            this.push('all.labels', {'name': this.labels[i], 'items': items});
+          }
+        }
+        return stats;
+      },
+
+      _updateRepoRow: function(repo, repoLabels, repoIssues, repoUntriaged, repoPRs) {
+        // If this row already exists, add to it, otherwise create a new entry.
+        var found = false;
+        for (var i = 0; i < this.repos.length; i++) {
+          if (this.repos[i].name === repo) {
+            // We're adding to an existing repo!
+            found = true;
+
+            this.set(['repos', i, 'issues'],
+                     this.get(['repos', i, 'issues']) + repoIssues.length);
+            this.set(['repos', i, 'untriaged'],
+                     this.get(['repos', i, 'untriaged']) + repoUntriaged.length);
+            this.set(['repos', i, 'prs'],
+                     this.get(['repos', i, 'prs']) + repoPRs.length);
+
+            // For each of the labels, add the new numbers.
+            for (var j = 0; j < this.labels.length; j++) {
+              this.set(['repos', i, 'labels', j, 'count'],
+                      this.get(['repos', i, 'labels', j, 'count']) + repoLabels[j].count);
+            }
+            break;
+          }
+        }
+
+        // This row didn't exist, add a new one!
+        if (!found) {
+          this.push('repos', {
+            'name': this._getFullRepoName(repo),
+            'issues': repoIssues.length,
+            'untriaged': repoUntriaged.length,
+            'prs': repoPRs.length
+          });
+          this.set(['repos', this.repos.length - 1, 'labels'], repoLabels);
+        }
       },
 
       _updateModelPath: function(path, newItems) {
