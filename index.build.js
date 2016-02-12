@@ -9893,7 +9893,7 @@ this.fire('dom-change');
 }
 });
 Polymer({
-is: 'dash-results',
+is: 'frankly-results',
 properties: {
 organization: { type: String },
 repos: { type: Array },
@@ -18264,7 +18264,7 @@ return barJustify + (barJustify === 'justified' ? '' : '-justified');
 }
 });
 Polymer({
-is: 'dash-header',
+is: 'frankly-header',
 properties: {
 header: { type: String },
 githubUser: {
@@ -18287,7 +18287,7 @@ return !!user;
 }
 });
 Polymer({
-is: 'dash-board',
+is: 'frank-ly',
 properties: {
 header: { type: String },
 organization: { type: String },
