@@ -1,18 +1,19 @@
-# <frankly>
-`Frankly` is the Polymer element that doesn't lie. It's a dashboard of statistics
-about the open issues and PRs for a given set of GitHub repositories.
+# frankly
+`Frankly` is a summary dashboard about the open issues and PRs for a given set of GitHub repositories.
 Because, frankly, we need one.
 
 ## Installing and running the demo
 
 ```
-bower install notwaldorf/frankly
+git clone https://github.com/notwaldorf/frankly.git
+cd frankly
+bower install
 python -m SimpleHTTPServer ## or your favourite local server
 ```
 
 ## Sample use
 
-Add this to an `index.html`, after you do the steps above.
+This is what the `index.html` contains
 ```html
 <!-- HTML imports for Polymer element and the Web Components polyfill -->
 <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
@@ -24,9 +25,9 @@ Add this to an `index.html`, after you do the steps above.
     labels='["bug", "enhancement"]'>
 </frank-ly>
 ```
-And that's literally it:
+And that's literally it. It looks like this:
 
-<img width="731" alt="screen shot 2016-02-12 at 12 58 39 am" src="https://cloud.githubusercontent.com/assets/1369170/13002517/e4a040f4-d123-11e5-8b6f-07f93c86aa64.png">
+<img width="731" alt="screenshot of the dashboard" src="https://cloud.githubusercontent.com/assets/1369170/13004257/4fa52f30-d12f-11e5-8978-09e62e076063.png">
 
 ## Configuring it
 

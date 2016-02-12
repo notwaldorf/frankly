@@ -1,7 +1,7 @@
 {
   "name": "frankly",
   "version": "0.0.0",
-  "description": "A dashboard of statistics on issues/PRs for a set of GitHub repositories",
+  "description": "A summary dashboard about the issues/PRs for a set of GitHub repositories",
   "authors": [
     "The Polymer Authors"
   ],
