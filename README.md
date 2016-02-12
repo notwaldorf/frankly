@@ -5,12 +5,16 @@ the open issues and PRs for a given set of GitHub repositories.
 
 Sample use:
 ```html
+<!-- HTML imports for Polymer element and the Web Components polyfill -->
+<script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+<link rel="import" href="dash-board.html">
+  
 <dash-board
-    organization="polymerelements"
-    repos='["paper-input", "paper-button"]'
+    repos='["emoji-rain", "emoji-selector"]'
     labels='["bug", "enhancement"]'>
 </dash-board>
 ```
+And that's literally it.
 
 By default, the dashboard looks at the repositories under the authenticated
 user's username, however it can be configured to use an organization, or even
