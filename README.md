@@ -75,6 +75,7 @@ element directly, with multiple `<dash-result>` elements:
       labels='["bug", "enhancement"]'>
   </frank-ly>
   <frank-ly
+      github-user="[[user]]"
       full-repo-names
       repos='["notwaldorf/caturday-post", "polymerelements/paper-input", "jquery/jquery"]'
       labels='["bug", "enhancement", "help wanted"]'>
