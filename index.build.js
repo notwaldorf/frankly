@@ -10086,7 +10086,7 @@ break;
 }
 if (!found) {
 this.push('repos', {
-'name': this._getFullRepoName(repo),
+'name': repo,
 'issues': repoIssues.length,
 'untriaged': repoUntriaged.length,
 'prs': repoPRs.length
