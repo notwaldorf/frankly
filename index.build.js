@@ -9922,7 +9922,7 @@ for (var i = 0; i < this.repos.length; i++) {
 requestQueue.push({ 'name': this.repos[i] });
 }
 this.all = {};
-this.set(['byRepo'], []);
+this.set(['repos'], []);
 this.set([
 'all',
 'labels'
@@ -9960,9 +9960,9 @@ this._makeNextRequest();
 } else {
 var response = JSON.parse(xhr.responseText);
 var repoIssues = this._getAllIssues(response);
-var repoUntriaged = this._filterIssuesByLabel(response, /^.+/i, true);
+var repoUntriaged = this._filterIssuesByLabel(repoIssues, /^.+/i, true);
 var repoPRs = this._getAllPRs(response);
-var repoLabelSummary = [];
+var repoLabels = this._addLabelStatsToSummary(repoIssues);
 this._updateModelPath([
 'all',
 'issues'
@@ -9975,88 +9975,7 @@ this._updateModelPath([
 'all',
 'prs'
 ], repoPRs);
-for (var i = 0; i < this.labels.length; i++) {
-var regex = new RegExp('^' + this.labels[i], 'i');
-var items = this._filterIssuesByLabel(response, regex, false);
-repoLabelSummary.push({
-'name': this.labels[i],
-'count': items.length
-});
-if (this.all.labels[i]) {
-this._updateModelPath([
-'all.labels',
-i,
-'items'
-], items);
-} else {
-this.push('all.labels', {
-'name': this.labels[i],
-'items': items
-});
-}
-}
-var found = false;
-for (var i = 0; i < this.byRepo.length; i++) {
-if (this.byRepo[i].name === this._getFullRepoName(repo.name)) {
-this.set([
-'byRepo',
-i,
-'issues'
-], this.get([
-'byRepo',
-i,
-'issues'
-]) + repoIssues.length);
-this.set([
-'byRepo',
-i,
-'untriaged'
-], this.get([
-'byRepo',
-i,
-'untriaged'
-]) + repoUntriaged.length);
-this.set([
-'byRepo',
-i,
-'prs'
-], this.get([
-'byRepo',
-i,
-'prs'
-]) + repoPRs.length);
-for (var j = 0; j < this.labels.length; j++) {
-this.set([
-'byRepo',
-i,
-'labels',
-j,
-'count'
-], this.get([
-'byRepo',
-i,
-'labels',
-j,
-'count'
-]) + repoLabelSummary[j].count);
-}
-found = true;
-break;
-}
-}
-if (!found) {
-this.push('byRepo', {
-'name': this._getFullRepoName(repo.name),
-'issues': repoIssues.length,
-'untriaged': repoUntriaged.length,
-'prs': repoPRs.length
-});
-this.set([
-'byRepo',
-this.byRepo.length - 1,
-'labels'
-], repoLabelSummary);
-}
+this._updateRepoRow(this._getFullRepoName(repo.name), repoLabels, repoIssues, repoUntriaged, repoPRs);
 var link = xhr.getResponseHeader('Link');
 var matches = link && link.match(/<([^>]*)>; rel="next"/);
 repo.next = matches && matches[1];
@@ -10090,6 +10009,94 @@ matches = matches || true;
 return negate ? !matches : matches;
 });
 return items;
+},
+_addLabelStatsToSummary: function (issues) {
+var stats = [];
+for (var i = 0; i < this.labels.length; i++) {
+var regex = new RegExp('^' + this.labels[i], 'i');
+var items = this._filterIssuesByLabel(issues, regex, false);
+stats.push({
+'name': this.labels[i],
+'count': items.length
+});
+if (this.all.labels[i]) {
+this._updateModelPath([
+'all.labels',
+i,
+'items'
+], items);
+} else {
+this.push('all.labels', {
+'name': this.labels[i],
+'items': items
+});
+}
+}
+return stats;
+},
+_updateRepoRow: function (repo, repoLabels, repoIssues, repoUntriaged, repoPRs) {
+var found = false;
+for (var i = 0; i < this.repos.length; i++) {
+if (this.repos[i].name === repo) {
+found = true;
+this.set([
+'repos',
+i,
+'issues'
+], this.get([
+'repos',
+i,
+'issues'
+]) + repoIssues.length);
+this.set([
+'repos',
+i,
+'untriaged'
+], this.get([
+'repos',
+i,
+'untriaged'
+]) + repoUntriaged.length);
+this.set([
+'repos',
+i,
+'prs'
+], this.get([
+'repos',
+i,
+'prs'
+]) + repoPRs.length);
+for (var j = 0; j < this.labels.length; j++) {
+this.set([
+'repos',
+i,
+'labels',
+j,
+'count'
+], this.get([
+'repos',
+i,
+'labels',
+j,
+'count'
+]) + repoLabels[j].count);
+}
+break;
+}
+}
+if (!found) {
+this.push('repos', {
+'name': this._getFullRepoName(repo),
+'issues': repoIssues.length,
+'untriaged': repoUntriaged.length,
+'prs': repoPRs.length
+});
+this.set([
+'repos',
+this.repos.length - 1,
+'labels'
+], repoLabels);
+}
 },
 _updateModelPath: function (path, newItems) {
 var currentItems = this.get(path) || [];
