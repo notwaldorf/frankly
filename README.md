@@ -21,7 +21,7 @@ This is what the `index.html` contains
 
 <frank-ly
     header="🚂🚃🚃💨"
-    repos='["emoji-rain", "emoji-selector", "github-canned-responses"]'
+    repos='["frankly", "emoji-rain", "emoji-selector", "github-canned-responses"]'
     labels='["bug", "enhancement"]'>
 </frank-ly>
 ```
@@ -35,15 +35,27 @@ By default, the dashboard looks at the repositories under the authenticated
 user's username, however it can be configured to use an organization, or even
 a mix of repositories from different users and organizations:
 
+### All the repositories the user is subscribed to
+
 ```html
-<!-- Repositories for a specific organization -->
+<frank-ly header="🚂🚃🚃💨"
+    labels='["bug", "enhancement"]'>
+</frank-ly>
+```
+
+### Repositories for a specific organization
+
+```
 <frank-ly
     organization="polymerelements"
     repos='["paper-input", "paper-button"]'
     labels='["bug", "enhancement"]'>
 </frank-ly>
+```
 
-<!-- Repositories for a mix of users and organization -->
+### Repositories for a mix of users and organization
+
+```
 <frank-ly
     full-repo-names
     repos='["notwaldorf/emoji-rain", "notwaldorf/caturday-post", "polymerelements/paper-input", "jquery/jquery"]'
