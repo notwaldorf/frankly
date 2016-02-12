@@ -13,10 +13,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="bower_components/paper-styles/color.html">
 
-<link rel="import" href="dash-results.html">
-<link rel="import" href="dash-header.html">
+<link rel="import" href="frankly-results.html">
+<link rel="import" href="frankly-header.html">
 
-<dom-module id="dash-board">
+<dom-module id="frank-ly">
   <template strip-whitespace>
     <style>
       :host {
@@ -26,20 +26,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
 
-    <dash-header header="[[header]]" github-user="{{user}}"></dash-header>
-    <dash-results
+    <frankly-header header="[[header]]" github-user="{{user}}"></frankly-header>
+    <frankly-results
         github-user="[[user]]"
         organization="[[organization]]"
         travisBadge="[[organization]]"
         full-repo-names$=[[fullRepoNames]]
         repos="[[repos]]"
         labels="[[labels]]">
-    </dash-results>
+    </frankly-results>
   </template>
 
   <script>
     Polymer({
-      is: 'dash-board',
+      is: 'frank-ly',
 
       properties: {
         /**

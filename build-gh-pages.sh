@@ -1,5 +1,5 @@
 org=${1:-"notwaldorf"}
-repo=${2:-"github-triage-dashboard"}
+repo=${2:-"frankly"}
 
 polybuild index.html
 echo js:   `gzip -c index.build.js | wc -c`

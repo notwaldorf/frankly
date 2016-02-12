@@ -1,14 +1,12 @@
-# github-triage-dashboard
-
-A Polymer element that will show you a dashboard of statistics about
-the open issues and PRs for a given set of GitHub repositories.
+# <frankly>
+`Frankly` is the Polymer element that doesn't lie. It's a dashboard of statistics
+about the open issues and PRs for a given set of GitHub repositories.
+Because, frankly, we need one.
 
 ## Installing and running the demo
 
 ```
-git clone https://github.com/notwaldorf/github-triage-dashboard.git
-cd github-triage-dashboard
-bower install
+bower install notwaldorf/frankly
 python -m SimpleHTTPServer ## or your favourite local server
 ```
 
@@ -18,13 +16,13 @@ Add this to an `index.html`, after you do the steps above.
 ```html
 <!-- HTML imports for Polymer element and the Web Components polyfill -->
 <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-<link rel="import" href="dash-board.html">
+<link rel="import" href="frank-ly.html">
 
-<dash-board
-    header="hai I am trapped in a dashboard <3"
+<frank-ly
+    header="🚂🚃🚃💨"
     repos='["emoji-rain", "emoji-selector", "github-canned-responses"]'
     labels='["bug", "enhancement"]'>
-</dash-board>
+</frank-ly>
 ```
 And that's literally it:
 
@@ -38,18 +36,18 @@ a mix of repositories from different users and organizations:
 
 ```html
 <!-- Repositories for a specific organization -->
-<dash-board
+<frank-ly
     organization="polymerelements"
     repos='["paper-input", "paper-button"]'
     labels='["bug", "enhancement"]'>
-</dash-board>
+</frank-ly>
 
 <!-- Repositories for a mix of users and organization -->
-<dash-board
+<frank-ly
     full-repo-names
     repos='["notwaldorf/emoji-rain", "notwaldorf/caturday-post", "polymerelements/paper-input", "jquery/jquery"]'
     labels='["bug", "enhancement"]'>
-</dash-board>
+</frank-ly>
 ```
 
 You can also configure which labels you want to display. `Untriaged`
@@ -70,16 +68,16 @@ element directly, with multiple `<dash-result>` elements:
   <dash-header
     header="Look at this dashboard go!"
     github-user="{{user}}"></dash-header>
-  <dash-board
+  <frank-ly
       github-user="[[user]]"
       repos='["emoji-rain", "emoji-translate"]'
       labels='["bug", "enhancement"]'>
-  </dash-board>
-  <dash-board
+  </frank-ly>
+  <frank-ly
       full-repo-names
       repos='["notwaldorf/caturday-post", "polymerelements/paper-input", "jquery/jquery"]'
       labels='["bug", "enhancement", "help wanted"]'>
-  </dash-board>
+  </frank-ly>
 </template>
 ```
 
