@@ -1,5 +1,5 @@
 # frankly
-`Frankly` is a summary dashboard about the open issues and PRs for a given set of GitHub repositories.
+`Frankly` is a summary dashboard about the open issues and PRs across any set of GitHub repositories.
 Because, frankly, we need one.
 
 ## Installing and running the demo
@@ -19,6 +19,7 @@ This is what the `index.html` contains
 <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 <link rel="import" href="frank-ly.html">
 
+<!-- The whole dashboard -->
 <frank-ly
     header="🚂🚃🚃💨"
     repos='["frankly", "emoji-rain", "emoji-selector", "github-canned-responses"]'
@@ -45,7 +46,7 @@ a mix of repositories from different users and organizations:
 
 ### Repositories for a specific organization
 
-```
+```html
 <frank-ly
     organization="polymerelements"
     repos='["paper-input", "paper-button"]'
@@ -55,7 +56,7 @@ a mix of repositories from different users and organizations:
 
 ### Repositories for a mix of users and organization
 
-```
+```html
 <frank-ly
     full-repo-names
     repos='["notwaldorf/emoji-rain", "notwaldorf/caturday-post", "polymerelements/paper-input", "jquery/jquery"]'
@@ -94,6 +95,12 @@ element directly, with multiple `<dash-result>` elements:
   </frank-ly>
 </template>
 ```
+
+## Private repos?
+At the moment `Frankly` only works for public repos, since it's requesting
+the least amount of permissions from GitHub -- my understanding is that
+the permissions needed to access anything about private repos require
+read/write access to _all of_ that organization's repos, which is a bit scary.
 
 ## <3
 Hope this helps you stay on top of issues and PRs!
