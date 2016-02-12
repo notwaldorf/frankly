@@ -9917,6 +9917,27 @@ if (!user)
 return;
 if (!this.organization)
 this.organization = user.github.username;
+if (this.repos && this.repos.length > 0) {
+this._fetchAllRepos();
+return;
+}
+this.repos = [];
+var url = 'https://api.github.com/users/' + user.github.username + '/subscriptions';
+var xhr = new XMLHttpRequest();
+xhr.open('GET', url);
+xhr.send();
+xhr.addEventListener('load', function () {
+response = JSON.parse(xhr.responseText);
+for (var i = 0; i < response.length; i++) {
+this.repos.push(response[i].name);
+}
+this._fetchAllRepos();
+}.bind(this));
+xhr.addEventListener('error', function () {
+this.status = 'Error: ' + xhr.status;
+}.bind(this));
+},
+_fetchAllRepos: function () {
 var requestQueue = [];
 for (var i = 0; i < this.repos.length; i++) {
 requestQueue.push({ 'name': this.repos[i] });
