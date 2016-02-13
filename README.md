@@ -69,30 +69,32 @@ is always the open issues that have no labels applied to them.
 
 ## Multiple dashboards in parallel
 
-To use multiple dashboards for the same user, just use the `<dash-header>`
-element directly, with multiple `<dash-result>` elements:
+To use multiple dashboards for the same user, just use the `<frankly-header>`
+element directly, with multiple `<frankly-result>` elements. A `dom-bind` is a
+special Polymer construct that allows you to easily bind data together (in this
+case, the authenticated user:
 
 ```html
 <!-- HTML imports for Polymer element and the Web Components polyfill -->
 <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-<link rel="import" href="dash-header.html">
-<link rel="import" href="dash-results.html">
+<link rel="import" href="frankly-header.html">
+<link rel="import" href="frankly-results.html">
 
 <template is="dom-bind">
-  <dash-header
+  <frankly-header
     header="Look at this dashboard go!"
-    github-user="{{user}}"></dash-header>
-  <frank-ly
+    github-user="{{user}}"></frankly-header>
+  <frankly-results
       github-user="[[user]]"
       repos='["emoji-rain", "emoji-translate"]'
       labels='["bug", "enhancement"]'>
-  </frank-ly>
-  <frank-ly
+  </frankly-results>
+  <frankly-results
       github-user="[[user]]"
       full-repo-names
       repos='["notwaldorf/caturday-post", "polymerelements/paper-input", "jquery/jquery"]'
       labels='["bug", "enhancement", "help wanted"]'>
-  </frank-ly>
+  </frankly-results>
 </template>
 ```
 
