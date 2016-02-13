@@ -104,5 +104,18 @@ the least amount of permissions from GitHub -- my understanding is that
 the permissions needed to access anything about private repos require
 read/write access to _all of_ that organization's repos, which is a bit scary.
 
+## Deploying it somewhere?
+`Frankly` uses Firebase to authenticate to GitHub. The Firebase app that I've included 
+lets you run the app locally, but won't work once you deploy it to your
+own domain. In that case, all you have to do is create your own Firebase 
+and GitHub apps (make sure to update your GitHub secrets into the Firebase app)
+and update the Firebase settings in `frankly-header`:
+```html
+<firebase-auth provider="github" id="githubAuth"
+  location="https://<your-app-name-here>.firebaseio.com"
+  user="{{githubUser}}">
+</firebase-auth>
+```
+
 ## <3
 Hope this helps you stay on top of issues and PRs!
