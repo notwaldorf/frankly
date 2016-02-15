@@ -1,5 +1,5 @@
 # frankly
-`Frankly` is a summary dashboard about the open issues and PRs for a given set of GitHub repositories.
+`Frankly` is a summary dashboard about the open issues and PRs across any set of GitHub repositories.
 Because, frankly, we need one.
 
 ## Installing and running the demo
@@ -19,9 +19,10 @@ This is what the `index.html` contains
 <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 <link rel="import" href="frank-ly.html">
 
+<!-- The whole dashboard -->
 <frank-ly
     header="🚂🚃🚃💨"
-    repos='["emoji-rain", "emoji-selector", "github-canned-responses"]'
+    repos='["frankly", "emoji-rain", "emoji-selector", "github-canned-responses"]'
     labels='["bug", "enhancement"]'>
 </frank-ly>
 ```
@@ -35,15 +36,27 @@ By default, the dashboard looks at the repositories under the authenticated
 user's username, however it can be configured to use an organization, or even
 a mix of repositories from different users and organizations:
 
+### All the repositories the user is subscribed to
+
 ```html
-<!-- Repositories for a specific organization -->
+<frank-ly header="🚂🚃🚃💨"
+    labels='["bug", "enhancement"]'>
+</frank-ly>
+```
+
+### Repositories for a specific organization
+
+```html
 <frank-ly
     organization="polymerelements"
     repos='["paper-input", "paper-button"]'
     labels='["bug", "enhancement"]'>
 </frank-ly>
+```
 
-<!-- Repositories for a mix of users and organization -->
+### Repositories for a mix of users and organization
+
+```html
 <frank-ly
     full-repo-names
     repos='["notwaldorf/emoji-rain", "notwaldorf/caturday-post", "polymerelements/paper-input", "jquery/jquery"]'
@@ -56,31 +69,52 @@ is always the open issues that have no labels applied to them.
 
 ## Multiple dashboards in parallel
 
-To use multiple dashboards for the same user, just use the `<dash-header>`
-element directly, with multiple `<dash-result>` elements:
+To use multiple dashboards for the same user, just use the `<frankly-header>`
+element directly, with multiple `<frankly-result>` elements. A `dom-bind` is a
+special Polymer construct that allows you to easily bind data together (in this
+case, the authenticated user:
 
 ```html
 <!-- HTML imports for Polymer element and the Web Components polyfill -->
 <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-<link rel="import" href="dash-header.html">
-<link rel="import" href="dash-results.html">
+<link rel="import" href="frankly-header.html">
+<link rel="import" href="frankly-results.html">
 
 <template is="dom-bind">
-  <dash-header
+  <frankly-header
     header="Look at this dashboard go!"
-    github-user="{{user}}"></dash-header>
-  <frank-ly
+    github-user="{{user}}"></frankly-header>
+  <frankly-results
       github-user="[[user]]"
       repos='["emoji-rain", "emoji-translate"]'
       labels='["bug", "enhancement"]'>
-  </frank-ly>
-  <frank-ly
+  </frankly-results>
+  <frankly-results
       github-user="[[user]]"
       full-repo-names
       repos='["notwaldorf/caturday-post", "polymerelements/paper-input", "jquery/jquery"]'
       labels='["bug", "enhancement", "help wanted"]'>
-  </frank-ly>
+  </frankly-results>
 </template>
+```
+
+## Private repos?
+At the moment `Frankly` only works for public repos, since it's requesting
+the least amount of permissions from GitHub -- my understanding is that
+the permissions needed to access anything about private repos require
+read/write access to _all of_ that organization's repos, which is a bit scary.
+
+## Deploying it somewhere?
+`Frankly` uses Firebase to authenticate to GitHub. The Firebase app that I've included 
+lets you run the app locally, but won't work once you deploy it to your
+own domain. In that case, all you have to do is create your own Firebase 
+and GitHub apps (make sure to update your GitHub secrets into the Firebase app)
+and update the Firebase settings in `frankly-header`:
+```html
+<firebase-auth provider="github" id="githubAuth"
+  location="https://<your-app-name-here>.firebaseio.com"
+  user="{{githubUser}}">
+</firebase-auth>
 ```
 
 ## <3

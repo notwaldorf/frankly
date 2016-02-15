@@ -168,9 +168,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <div class="count"><a class="pr" target="_blank" href="https://github.com/{{item.name}}/pulls?utf8=%E2%9C%93&q=is%3Apr+is%3Aopen">{{item.prs}}</a></div>
 
           <template is="dom-repeat" items="{{item.labels}}" as="labelItem">
-            <div class="count"><a class="pr" target="_blank" href="https://github.com/{{organization}}/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3A{{labelItem.name}}+">{{labelItem.count}}</a></div>
+            <div class="count"><a class="pr" target="_blank" href="https://github.com/{{item.name}}/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3A{{labelItem.name}}+">{{labelItem.count}}</a></div>
           </template>
-          <div class="count" hidden$="[[!travisBadge]]"><a target="_blank" href="https://travis-ci.org/{{organization}}/{{item.name}}"><img src="https://travis-ci.org/{{organization}}/{{item.name}}.svg?branch=master"></a></div>
+          <div class="count" hidden$="[[!travisBadge]]"><a target="_blank" href="https://travis-ci.org/{{item.name}}"><img src="https://travis-ci.org/{{item.name}}.svg?branch=master"></a></div>
         </div>
       </template>
     </div>
@@ -260,6 +260,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!this.organization)
           this.organization = user.github.username;
 
+        if (this.repos && this.repos.length > 0) {
+          this._fetchAllRepos();
+          return;
+        }
+
+        // If you didn't specify any repos, default to all the ones
+        // the user is subscribed to.
+        this.repos =[];
+
+        var url = 'https://api.github.com/users/' + user.github.username + '/subscriptions';
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.send();
+
+        xhr.addEventListener("load", function() {
+          response = JSON.parse(xhr.responseText);
+          for (var i = 0; i < response.length; i++) {
+            this.repos.push(response[i].name);
+          }
+          this._fetchAllRepos();
+        }.bind(this));
+        xhr.addEventListener("error", function() {
+          this.status = 'Error: ' + xhr.status;
+        }.bind(this));
+      },
+
+      _fetchAllRepos: function() {
         // We want to incrementally fetch each repo, rather than block while
         // waiting on all of them, so create a queue of repos we care about.
         var requestQueue = [];
@@ -412,7 +439,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // This row didn't exist, add a new one!
         if (!found) {
           this.push('repos', {
-            'name': this._getFullRepoName(repo),
+            'name': repo,
             'issues': repoIssues.length,
             'untriaged': repoUntriaged.length,
             'prs': repoPRs.length
