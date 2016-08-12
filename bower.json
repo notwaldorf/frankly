@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A summary dashboard about the issues/PRs for a set of GitHub repositories",
   "authors": [
-    "The Polymer Authors"
+    "Monica Dinculescu <noms@google.com>"
   ],
   "keywords": [
     "web-components",
